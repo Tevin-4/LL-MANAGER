@@ -13,12 +13,11 @@ def create_app(config_name=None):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
 
-    # Extensions
+    # 1. Initialize structural base extensions first
     CORS(app, origins=app.config.get("CORS_ORIGINS", "*"))
     JWTManager(app)
-    init_db(app)
 
-    # Blueprints
+    # 2. Import Blueprints AND their corresponding models into memory FIRST
     from routes.auth import auth_bp
     from routes.leagues import leagues_bp
     from routes.teams import teams_bp
@@ -27,6 +26,7 @@ def create_app(config_name=None):
     from routes.goals import goals_bp
     from routes.standings import standings_bp
 
+    # 3. Register Blueprints so Flask maps out routes
     app.register_blueprint(auth_bp)
     app.register_blueprint(leagues_bp)
     app.register_blueprint(teams_bp)
@@ -34,6 +34,11 @@ def create_app(config_name=None):
     app.register_blueprint(matches_bp)
     app.register_blueprint(goals_bp)
     app.register_blueprint(standings_bp)
+
+    # 4. NOW initialize database table creation.
+    # Moving this to the bottom ensures all tables (like teams) are loaded 
+    # into SQLAlchemy's registry before create_all() is called!
+    init_db(app)
 
     @app.route("/api/health", methods=["GET"])
     def health_check():
@@ -46,10 +51,6 @@ def create_app(config_name=None):
     @app.errorhandler(405)
     def method_not_allowed(e):
         return jsonify({"error": "Method not allowed"}), 405
-
-    @app.errorhandler(500)
-    def server_error(e):
-        return jsonify({"error": "Internal server error"}), 500
 
     return app
 
