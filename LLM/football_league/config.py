@@ -14,10 +14,18 @@ class Config:
     DB_PORT = os.environ.get("DB_PORT", "3306")
     DB_NAME = os.environ.get("DB_NAME", "football_league")
 
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL",
-        f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}",
-    )
+   # Check if a cloud database URL exists; if so, use it directly.
+# Otherwise, fall back to your local MySQL fallback.
+RAW_DB_URL = os.environ.get("DATABASE_URL")
+
+if RAW_DB_URL:
+    # Render URLs sometimes start with 'postgres://', but SQLAlchemy 1.4+ requires 'postgresql://'
+    if RAW_DB_URL.startswith("postgres://"):
+        SQLALCHEMY_DATABASE_URI = RAW_DB_URL.replace("postgres://", "postgresql://", 1)
+    else:
+        SQLALCHEMY_DATABASE_URI = RAW_DB_URL
+else:
+    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True}
 
