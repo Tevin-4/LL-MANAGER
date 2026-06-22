@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Football League Manager</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="brand"> LL MANAGER</div>
+    <nav>
+      <img id="logo" src="Logo.ico">
+    </nav>
+  </header>
+
+  <main>
+    <h1>Welcome to the LL Manager</h1>
+    <p>Sign in to manage leagues, teams, players and matches, or browse public standings and fixtures without an
+      account.</p>
+
+    <div id="login-error" class="alert"></div>
+    <div id="login-success" class="alert"></div>
+
+    <form id="login-form" class="entity-form" style="max-width:420px;">
+      <h2>Sign In</h2>
+      <div class="form-row">
+        <div>
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required />
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required />
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit">Login</button>
+        <button type="button" class="btn-secondary" id="show-register">Create account</button>
+      </div>
+    </form>
+
+    <form id="register-form" class="entity-form" style="max-width:420px; display:none;">
+      <h2>Create Account</h2>
+      <div class="form-row">
+        <div>
+          <label for="reg-username">Username</label>
+          <input type="text" id="reg-username" name="username" required />
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label for="reg-email">Email</label>
+          <input type="email" id="reg-email" name="email" required />
+        </div>
+      </div>
+      <div class="form-row">
+        <div>
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" name="password" required minlength="6" />
+        </div>
+        <div>
+          <label for="reg-role">Account Type</label>
+          <select id="reg-role" name="role" required>
+            <option value="player">Player</option>
+            <option value="coach">Coach</option>
+            <option value="league_admin">League Admin</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit">Register</button>
+        <button type="button" class="btn-secondary" id="show-login">Back to login</button>
+      </div>
+    </form>
+
+    <p><a href="pages/standings.html">View standings without signing in →</a></p>
+  </main>
+
+  <footer class="site-footer">LLM MANAGER: Built for order and consistency in the game.</footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const loginForm = document.getElementById("login-form");
+      const registerForm = document.getElementById("register-form");
+      const loginError = document.getElementById("login-error");
+      const loginSuccess = document.getElementById("login-success");
+
+      document.getElementById("show-register").addEventListener("click", () => {
+        loginForm.style.display = "none";
+        registerForm.style.display = "block";
+      });
+      document.getElementById("show-login").addEventListener("click", () => {
+        registerForm.style.display = "none";
+        loginForm.style.display = "block";
+      });
+
+      if (App.isLoggedIn()) {
+        loginForm.style.display = "none";
+      }
+
+      loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        try {
+          const data = await API.login({
+            username: document.getElementById("username").value.trim(),
+            password: document.getElementById("password").value,
+          });
+          App.saveSession(data.user, data.access_token);
+          App.showSuccess(loginSuccess, `Welcome back, ${data.user.username}!`);
+          setTimeout(() => (window.location.href = "pages/dashboard.html"), 600);
+        } catch (err) {
+          App.showError(loginError, err.message);
+        }
+      });
+
+      registerForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        try {
+          const data = await API.register({
+            username: document.getElementById("reg-username").value.trim(),
+            email: document.getElementById("reg-email").value.trim(),
+            password: document.getElementById("reg-password").value,
+            role: document.getElementById("reg-role").value,
+          });
+          App.saveSession(data.user, data.access_token);
+          App.showSuccess(loginSuccess, `Account created. Welcome, ${data.user.username}!`);
+          setTimeout(() => (window.location.href = "pages/dashboard.html"), 600);
+        } catch (err) {
+          App.showError(loginError, err.message);
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
