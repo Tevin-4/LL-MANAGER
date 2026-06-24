@@ -44,6 +44,14 @@ def create_app(config_name=None):
     def health_check():
         return jsonify({"status": "ok"}), 200
 
+    @app.route("/", methods=["GET"])
+    def index():
+        return jsonify({
+            "message": "Welcome to the Football League API Manager",
+            "status": "Online",
+            "environment": "production"
+        }), 200
+
     @app.errorhandler(404)
     def not_found(e):
         return jsonify({"error": "Resource not found"}), 404
