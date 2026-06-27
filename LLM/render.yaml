@@ -19,10 +19,12 @@ services:
         generateValue: true
 
   # 2. Static Frontend Website
-  - type: static
+  - type: web
     name: football-league-frontend
+    runtime: static
     buildCommand: "" # No build step required
     staticPublishPath: frontend
+
 
 
 databases:
