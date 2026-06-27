@@ -19,11 +19,11 @@ services:
         generateValue: true
 
   # 2. Static Frontend Website
-  - type: web
+  - type: static
     name: football-league-frontend
-    env: static
     buildCommand: "" # No build step required
-    publishPath: frontend
+    staticPublishPath: frontend
+
 
 databases:
   # 3. Managed PostgreSQL Database
